@@ -16,15 +16,16 @@ class Dataloader(object):
         remove_outlier_df = self.remove_outlier(df)
         expend_feature_df = self.expend_feature(remove_outlier_df)
         df_fillna = self.fillna(expend_feature_df,method='regression')
-        df_nor = self.normalize(df)
-        train_y = df_nor['avg_price']
-        train_x = df_nor.drop(['building_id','avg_price','parking_area'],axis=1)
+        train_y = df_fillna['avg_price']
+        train_x = df_fillna.drop(['building_id','avg_price','parking_area'],axis=1)
+        train_x = self.normalize(train_x)
         X_train, X_test, y_train, y_test = train_test_split(train_x, train_y, test_size=size, random_state=42)
         return X_train, X_test, y_train, y_test
     def prepare_test_data(self,df):
         expend_feature_df = self.expend_feature(df)
         df_fillna = self.fillna(expend_feature_df,method='regression')
         test_df = df_fillna.drop(['building_id','parking_area'],axis=1)
+        test_df = self.normalize(test_df)
         return test_df
     def fillna(self,df,method = "zero"):
         if method == 'zero':
@@ -67,6 +68,6 @@ class Dataloader(object):
         return clean_data
     def normalize(self,X):
         for col in X.columns:
-            if col not in entity_features_columns:
+            if col not in self.entity_features_columns:
                 X[col] = preprocessing.scale(X[col])
         return X
