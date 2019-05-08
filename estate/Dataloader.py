@@ -5,6 +5,7 @@ from scipy import stats
 from sklearn.utils import shuffle
 from sklearn.linear_model import LinearRegression
 from IPython.display import display, HTML
+from sklearn import preprocessing
 
 class Dataloader(object):
     def __init__(self):
@@ -51,6 +52,7 @@ class Dataloader(object):
         df['parking_price'] = col
         
         df['txn_floor'] = df['txn_floor'].fillna(df['total_floor'])
+        df = self.(normalize,df)
         return df
             
     def expend_feature(self,X):
@@ -63,4 +65,8 @@ class Dataloader(object):
         outlier_index = np.where(np.abs(stats.zscore(X['avg_price'])) > 3)[0]
         clean_data = X.drop(X.index[outlier_index])
         return clean_data
-        
+    def normalize(self,X):
+        for col in X.columns:
+            if col not in entity_features_columns:
+                X[col] = preprocessing.scale(X[col])
+        return X
