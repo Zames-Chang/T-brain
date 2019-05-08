@@ -16,8 +16,9 @@ class Dataloader(object):
         remove_outlier_df = self.remove_outlier(df)
         expend_feature_df = self.expend_feature(remove_outlier_df)
         df_fillna = self.fillna(expend_feature_df,method='regression')
-        train_y = df_fillna['avg_price']
-        train_x = df_fillna.drop(['building_id','avg_price','parking_area'],axis=1)
+        df_nor = self.normalize(df)
+        train_y = df_nor['avg_price']
+        train_x = df_nor.drop(['building_id','avg_price','parking_area'],axis=1)
         X_train, X_test, y_train, y_test = train_test_split(train_x, train_y, test_size=size, random_state=42)
         return X_train, X_test, y_train, y_test
     def prepare_test_data(self,df):
@@ -52,7 +53,6 @@ class Dataloader(object):
         df['parking_price'] = col
         
         df['txn_floor'] = df['txn_floor'].fillna(df['total_floor'])
-        df = self.(normalize,df)
         return df
             
     def expend_feature(self,X):
