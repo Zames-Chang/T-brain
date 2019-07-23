@@ -3,7 +3,7 @@ def score(y_true,y_predict):
     z2 = 0
     total = 0
     for y1,y2 in zip(y_predict,y_true):
-        present = abs(y1-y2)/y2
+        present = abs(y1-y2)/abs(y2)
         total += present
         if(present <= 0.1):
             z += 1

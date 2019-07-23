@@ -11,6 +11,7 @@ class RamdomForest(object):
         self.model = ""
         self.loss = 'l1'
         self.max_point = 0
+        self.entity_features_columns = ['building_material', 'city_town','building_type', 'building_use', 'parking_way','I_index','II_index','III_index','IV_index','V_index','VI_index','VII_index','VIII_index','IX_index','X_index','XI_index','XII_index','XIII_index','XIV_index' ,'parking_price_isna','txn_floor_isna']
     def score(self,y_true,y_predict):
         z = 0
         z2 = 0
@@ -27,8 +28,8 @@ class RamdomForest(object):
         z , point = score(y_true,y_pred)
         return 'custom_loss',z, False
 
-    def train_LGBM(self,train, t_target, valid, v_target,parm,use_custom_loss = False):
-        entity_features_columns = ['building_material', 'city', 'town', 'village', 'building_type', 'building_use', 'parking_way', 'I_index_50', 'I_index_500', 'I_index_1000', 'I_index_5000', 'I_index_10000', 'II_index_50', 'II_index_500', 'II_index_1000', 'II_index_5000', 'II_index_10000', 'III_index_50', 'III_index_500', 'III_index_1000', 'III_index_5000', 'III_index_10000', 'IV_index_50', 'IV_index_500', 'IV_index_1000', 'IV_index_5000', 'IV_index_10000', 'V_index_50', 'V_index_500', 'V_index_1000', 'V_index_5000', 'V_index_10000', 'VI_index_50', 'VI_index_500', 'VI_index_1000', 'VI_index_5000', 'VI_index_10000', 'VII_index_50', 'VII_index_500', 'VII_index_1000', 'VII_index_5000', 'VII_index_10000', 'VIII_index_50', 'VIII_index_500', 'VIII_index_1000', 'VIII_index_5000', 'VIII_index_10000', 'IX_index_50', 'IX_index_500', 'IX_index_1000', 'IX_index_5000', 'IX_index_10000', 'X_index_50', 'X_index_500', 'X_index_1000', 'X_index_5000', 'X_index_10000', 'XI_index_50', 'XI_index_500', 'XI_index_1000', 'XI_index_5000', 'XI_index_10000', 'XII_index_50', 'XII_index_500', 'XII_index_1000', 'XII_index_5000', 'XII_index_10000', 'XIII_index_50', 'XIII_index_500', 'XIII_index_1000', 'XIII_index_5000', 'XIII_index_10000', 'XIV_index_50', 'XIV_index_500', 'XIV_index_1000', 'XIV_index_5000', 'XIV_index_10000','parking_price_isna','txn_floor_isna']
+    def train_LGBM(self,train, t_target, valid, v_target,parm,use_custom_loss = False,reg_alpha = 0,reg_lambda = 0):
+        #entity_features_columns = ['total_floor','building_material','city_town', 'building_type', 'building_use', 'parking_way', 'I_index_50', 'I_index_500', 'I_index_1000', 'I_index_5000', 'I_index_10000', 'II_index_50', 'II_index_500', 'II_index_1000', 'II_index_5000', 'II_index_10000', 'III_index_50', 'III_index_500', 'III_index_1000', 'III_index_5000', 'III_index_10000', 'IV_index_50', 'IV_index_500', 'IV_index_1000', 'IV_index_5000', 'IV_index_10000', 'V_index_50', 'V_index_500', 'V_index_1000', 'V_index_5000', 'V_index_10000', 'VI_index_50', 'VI_index_500', 'VI_index_1000', 'VI_index_5000', 'VI_index_10000', 'VII_index_50', 'VII_index_500', 'VII_index_1000', 'VII_index_5000', 'VII_index_10000', 'VIII_index_50', 'VIII_index_500', 'VIII_index_1000', 'VIII_index_5000', 'VIII_index_10000', 'IX_index_50', 'IX_index_500', 'IX_index_1000', 'IX_index_5000', 'IX_index_10000', 'X_index_50', 'X_index_500', 'X_index_1000', 'X_index_5000', 'X_index_10000', 'XI_index_50', 'XI_index_500', 'XI_index_1000', 'XI_index_5000', 'XI_index_10000', 'XII_index_50', 'XII_index_500', 'XII_index_1000', 'XII_index_5000', 'XII_index_10000', 'XIII_index_50', 'XIII_index_500', 'XIII_index_1000', 'XIII_index_5000', 'XIII_index_10000', 'XIV_index_50', 'XIV_index_500', 'XIV_index_1000', 'XIV_index_5000', 'XIV_index_10000','parking_price_isna','txn_floor_isna']
         #entity_features_columns = ['building_material', 'city', 'town', 'village', 'building_type', 'building_use', 'parking_way','parking_price_isna','txn_floor_isna']
         if use_custom_loss:
             self.loss = custom_loss
@@ -38,18 +39,29 @@ class RamdomForest(object):
         num_leaves = parm['num_leaves']
         feature_fraction = parm['feature_fraction']
         flag = True
+        good_depth = 0
+        good_leaves = 0
+        good_fraction = 0
         
         for depth in max_depth:
             for leaves in num_leaves:
                 for fraction in feature_fraction:
-                    rf = LGBMRegressor(learning_rate=learning_rate, objective='regression', n_estimators=n_estimators,
-                                       max_depth=depth, num_leaves=leaves,
-                                       feature_fraction=fraction, bagging_freq=1,metric='rmse')           
+                    rf = LGBMRegressor(learning_rate=learning_rate, 
+                                       objective='regression', 
+                                       n_estimators=n_estimators,
+                                       max_depth=depth, 
+                                       num_leaves=leaves, 
+                                       reg_alpha=reg_alpha,
+                                       reg_lambda = reg_lambda,
+                                       feature_fraction=fraction, 
+                                       bagging_freq=1,
+                                       metric='rmse')           
                     rf.fit(train, t_target, # should we drop the features that are not correlate to our target?
                            eval_set=[(train, t_target), (valid, v_target)],
-                           early_stopping_rounds=50, verbose=10,
+                           #early_stopping_rounds=100, 
+                           verbose=5000,
                            eval_metric=self.loss,
-                           categorical_feature=entity_features_columns
+                           categorical_feature=self.entity_features_columns
                            )
                     print("Finished.")
                     if flag:
@@ -60,10 +72,15 @@ class RamdomForest(object):
                     if point > self.max_point:
                         self.max_point = point
                         self.model = rf
+                        good_depth = depth
+                        good_leaves = leaves
+                        good_fraction = fraction
+        print(f"depth : {good_depth} leaves : {good_leaves} fraction :{good_fraction}")
+        self.model.booster_.save_model(f'models/lightgbm{good_depth}_{good_leaves}_{good_fraction}.txt')
         return self
     def predict(self,X_test,y_test):
         yhat = self.model.predict(X_test)
-        return yhat*X_test['building_area'],y_test*X_test['building_area']
+        return yhat*X_test['building_area']  ,y_test*X_test['building_area']
     def plot_feature_important(self):
         ax = lgb.plot_importance(self.model, max_num_features=20)
         return ax
