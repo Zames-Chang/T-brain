@@ -25,7 +25,6 @@ class Dataloader(object):
         remove_outlier_df = self.remove_outlier(merge_df)
         expend_feature_df = self.expend_feature(remove_outlier_df)
         df_fillna = self.fillna(expend_feature_df,method='regression')
-        df_fillna['avg_price'] = df_fillna['avg_price'] #- df_fillna['parking_price']/df_fillna['building_area']
         train_y = df_fillna['avg_price']
         train_x = df_fillna.drop(['building_id','avg_price','parking_area','parking_price'],axis=1)
         train_x  = self.normalize(train_x)
