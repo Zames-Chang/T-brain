@@ -29,8 +29,6 @@ class RamdomForest(object):
         return 'custom_loss',z, False
 
     def train_LGBM(self,train, t_target, valid, v_target,parm,use_custom_loss = False,reg_alpha = 0,reg_lambda = 0):
-        #entity_features_columns = ['total_floor','building_material','city_town', 'building_type', 'building_use', 'parking_way', 'I_index_50', 'I_index_500', 'I_index_1000', 'I_index_5000', 'I_index_10000', 'II_index_50', 'II_index_500', 'II_index_1000', 'II_index_5000', 'II_index_10000', 'III_index_50', 'III_index_500', 'III_index_1000', 'III_index_5000', 'III_index_10000', 'IV_index_50', 'IV_index_500', 'IV_index_1000', 'IV_index_5000', 'IV_index_10000', 'V_index_50', 'V_index_500', 'V_index_1000', 'V_index_5000', 'V_index_10000', 'VI_index_50', 'VI_index_500', 'VI_index_1000', 'VI_index_5000', 'VI_index_10000', 'VII_index_50', 'VII_index_500', 'VII_index_1000', 'VII_index_5000', 'VII_index_10000', 'VIII_index_50', 'VIII_index_500', 'VIII_index_1000', 'VIII_index_5000', 'VIII_index_10000', 'IX_index_50', 'IX_index_500', 'IX_index_1000', 'IX_index_5000', 'IX_index_10000', 'X_index_50', 'X_index_500', 'X_index_1000', 'X_index_5000', 'X_index_10000', 'XI_index_50', 'XI_index_500', 'XI_index_1000', 'XI_index_5000', 'XI_index_10000', 'XII_index_50', 'XII_index_500', 'XII_index_1000', 'XII_index_5000', 'XII_index_10000', 'XIII_index_50', 'XIII_index_500', 'XIII_index_1000', 'XIII_index_5000', 'XIII_index_10000', 'XIV_index_50', 'XIV_index_500', 'XIV_index_1000', 'XIV_index_5000', 'XIV_index_10000','parking_price_isna','txn_floor_isna']
-        #entity_features_columns = ['building_material', 'city', 'town', 'village', 'building_type', 'building_use', 'parking_way','parking_price_isna','txn_floor_isna']
         if use_custom_loss:
             self.loss = custom_loss
         learning_rate = parm['learning_rate']
@@ -58,7 +56,6 @@ class RamdomForest(object):
                                        metric='rmse')           
                     rf.fit(train, t_target, # should we drop the features that are not correlate to our target?
                            eval_set=[(train, t_target), (valid, v_target)],
-                           #early_stopping_rounds=100, 
                            verbose=5000,
                            eval_metric=self.loss,
                            categorical_feature=self.entity_features_columns
@@ -75,8 +72,6 @@ class RamdomForest(object):
                         good_depth = depth
                         good_leaves = leaves
                         good_fraction = fraction
-        print(f"depth : {good_depth} leaves : {good_leaves} fraction :{good_fraction}")
-        self.model.booster_.save_model(f'models/lightgbm{good_depth}_{good_leaves}_{good_fraction}.txt')
         return self
     def predict(self,X_test,y_test):
         yhat = self.model.predict(X_test)
